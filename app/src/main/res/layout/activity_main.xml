@@ -32,7 +32,7 @@
             tools:layout_editor_absoluteY="49dp">
 
             <EditText
-                android:id="@+id/editTextUserInput"
+                android:id="@+id/editTextUserAIInput"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="Enter your text here"
@@ -40,11 +40,12 @@
                 android:inputType="text" />
 
             <Button
-                android:id="@+id/buttonSubmit"
+                android:id="@+id/buttonSubmitInput"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="5"
-                android:text="Submit" />
+                android:text="Submit"
+                android:onClick="buttonPressed"/>
         </LinearLayout>
 
     </LinearLayout>
