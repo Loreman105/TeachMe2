@@ -43,4 +43,5 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
     implementation("com.squareup.okhttp3:okhttp:5.3.0")
+    implementation("org.json:json:20090211")
 }

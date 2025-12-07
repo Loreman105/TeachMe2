@@ -1,6 +1,8 @@
 package com.bohn.teachme2;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -13,31 +15,27 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.Serial;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.*;
 
 public class MainActivity extends AppCompatActivity {
-    private String url = "http://192.168.152.1:1550";
+//    "http://192.168.152.1:1550";
+    private String url = "http://192.168.50.176:1550";
     private TextView output;
     private EditText input;
-//    private Button submit;
 
     private static final MediaType JSON = MediaType.get("application/json");
-//    public OkHttpClient client;
-OkHttpClient client = new OkHttpClient();
+    private OkHttpClient client;
 
-    String requestPlease(String url) throws IOException {
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
+    private ArrayList<String> context = new ArrayList<String>();
 
-        try (Response response = client.newCall(request).execute()) {
-            return response.body().string();
-        }
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,87 +47,105 @@ OkHttpClient client = new OkHttpClient();
             return insets;
         });
 
+        client = new OkHttpClient.Builder()
+                .readTimeout(0, TimeUnit.MILLISECONDS)
+                .build();
+
         output = findViewById(R.id.textViewAI);
         input = findViewById(R.id.editTextUserAIInput);
 
-//        client = new OkHttpClient();
-//
-//        client = new OkHttpClient();
-//        Request req = new Request.Builder()
-//                .url("https://raw.github.com/square/okhttp/master/README.md")
-//                .build();
-
         String result = "XXX";
-        Log.d("CODE", "HelloWORLD");
-
-
-//        try (Response res = client.newCall(req).execute()) {
-//            result = res.body().string();
-//        } catch (java.io.IOException | IllegalStateException e) {
-//            output.setText("FAILURE: " + e.getMessage());
-//        }
+        Log.d("CODE", "Hello World");
     }
 
     public void buttonPressed(View view) {
-        Thread th = new Thread(new Runnable() {
+        String question = input.getText().toString();
+        promptServer(question, url);
+//        Thread th = new Thread(new Runnable() {
+//            String demo = "";
+//
+//            @Override
+//            public void run() {
+//                try {
+//                    demo = requestPlease("https://github.com/strangejmaster/Retention-Trainer/");
+//                    Log.d("CODE", "result");
+////            throw new IOException("test");
+//                } catch (IOException e) {
+//                    Log.d("CODE", "Fatal Error: " + e.getMessage());
+//                }
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        output.setText(demo);
+//                    }
+//                });
+//            }
+//        });
+//        th.start();
+    }
+
+    public void promptServer(String question, String url) {
+
+        Thread backProcess = new Thread(new Runnable() {
+            String result = "XXX";
+            String content = "";
             @Override
             public void run() {
+                String endpoint = "/v1/chat/completions";
+
+                Log.d("CODE",  "URI/URL: " + url + endpoint);
+
+                String call = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>";
+
+                call = "{" +
+                        "\"model\": \"meta-llama-3.1-8b-instruct\"," +
+                        "\"messages\": [" +
+                        "{" +
+                        "\"role\": \"developer\"," +
+                        "\"content\": \"You are an AI that behaves like a curious student. You only know the minimum required knowledge not information on the specific topic within the subject that the teacher is teaching. You only learn from the information provided in the user’s prompt. If something is not explained in the prompt, you treat it as unknown and do not guess.\"" +
+                        "},{" +
+                        "\"role\": \"user\"," +
+                        "\"content\": \"" + question + "\"" +
+//                        "\"temperature\": 0.7," +
+//                        "\"max_tokens\": 200," +
+//                        "\"stream\": false," +
+//                        "\"stop\": \"\n\"" +
+                        "}]}";
+
+                Log.d("CODE", "MESSAGE: " + call);
+
+                RequestBody requestBody = RequestBody.create(call, JSON);
+
+                Request req = new Request.Builder()
+                        .url(url + endpoint)
+                        .post(requestBody)
+                        .build();
+
                 try {
-                    String result = requestPlease("https://github.com/strangejmaster/Retention-Trainer/");
-                    Log.d("CODE", "result");
-//            throw new IOException("test");
+                    Response res = client.newCall(req).execute();
+                    result = res.body().string();
                 } catch (IOException e) {
-                    Log.d("CODE", "Fatal Error: " + e.getMessage());
+                    result = "Error calling the API: " + e.getMessage();
                 }
+
+//                Parsing Output
+                Log.d("CODE", "Content: " + result);
+                try {
+                    JSONObject obj = new JSONObject(result);
+                    content = obj.getJSONArray("choices").getJSONObject(0).getJSONObject("message").get("content").toString();
+                } catch (Exception e) {
+                    content = "Error: " + e.getMessage();
+                }
+                Log.d("CODE", "Content: "+ content);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        output.setText(output.getText().toString() + "\n" + content);
+                    }
+                });
             }
         });
-        th.start();
-        String question = input.getText().toString();
-//        try {
-//            String result = promptServer(question, url);
-////            output.setText(result);
-//        } catch (IOException e) {
-////            output.setText("There's been an error");
-//        }
-
+        backProcess.start();
     }
-
-    public String promptServer(String question, String url) throws IOException {
-        String endpoint = "/api/v0/completions";
-
-        String call = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>";
-
-        call = "{" +
-                "\"model\": \"meta-llama-3.1-8b-instruct\"," +
-                "\"prompt\": \"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\"," +
-                "\"temperature\": 0.7," +
-                "\"max_tokens\": 200," +
-                "\"stream\": false," +
-                "\"stop\": \"\n\"}";
-        call = "{}";
-        System.out.println("Call: ");
-        System.out.print(call);
-
-        RequestBody requestBody = RequestBody.create(call, JSON);
-
-        Request req = new Request.Builder()
-                .url("https://raw.github.com/square/okhttp/master/README.md")
-                .build();
-
-        String result = "XXX";
-
-        try (Response res = client.newCall(req).execute()) {
-            result = res.body().string();
-        }
-//        try {
-//            Response res = client.newCall(req).execute();
-//            result = res.body().string();
-//        } catch (IOException e) {
-//            result = "Error calling the API: " + e.getMessage();
-//        }
-
-        return result;
-    }
-
-
 }
