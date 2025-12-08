@@ -26,12 +26,15 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/textViewAI"
+
+
+                <EditText
+                    android:id="@+id/editTextUserIPInput"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="190"
-                    android:text="This is AI Output" />
+                    android:layout_height="0dp"
+                    android:hint="Server Ip : Port (ex. 192.168.1.174:1550)"
+                    android:layout_weight="35"
+                    android:inputType="text" />
             </LinearLayout>
         </ScrollView>
 

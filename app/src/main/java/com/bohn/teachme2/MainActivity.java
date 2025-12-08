@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 import okhttp3.*;
 
 public class MainActivity extends AppCompatActivity {
-//    "http://192.168.152.1:1550";
+
     private String url = "http://192.168.50.176:1550";
     private TextView output;
     private EditText input;
