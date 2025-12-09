@@ -18,7 +18,7 @@
 
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="190">
 
             <LinearLayout
@@ -26,15 +26,24 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-
-
                 <EditText
                     android:id="@+id/editTextUserIPInput"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
+                    android:layout_height="wrap_content"
                     android:hint="Server Ip : Port (ex. 192.168.1.174:1550)"
                     android:layout_weight="35"
                     android:inputType="text" />
+
+                <Spinner
+                    android:id="@+id/spinnerModels"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:id="@+id/textViewAI"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
             </LinearLayout>
         </ScrollView>
 
